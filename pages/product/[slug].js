@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback, useContext } from 'react'
 import Image from 'next/image'
 import Layout from '../../components/Layout'
 import {
@@ -14,11 +14,21 @@ import NextLink from 'next/link'
 import useStyles from '../../utils/styles'
 import Product from '../../models/Product'
 import db from '../../utils/db'
+import axios from 'axios'
+import { Store } from '../../utils/Store'
 
 function ProductScreen({ product }) {
   const classes = useStyles()
+  const { dispatch } = useContext(Store)
 
-  // const product = data.products.find((a) => a.slug === slug)
+  const addToCartHandler = useCallback(async () => {
+    const { data } = await axios.get(`/api/products/${product._id}`)
+    if (data.countInStock <= 0) {
+      window.alert('Désolé , cet article est en rupture de stock')
+      return
+    }
+    dispatch({ type: 'CART_ADD_ITEM', payload: { ...product, quantity: 1 } })
+  }, [product, dispatch])
 
   if (!product) return <div>Product Not Found</div>
   return (
@@ -94,6 +104,7 @@ function ProductScreen({ product }) {
                   fullWidth
                   variant="contained"
                   color="primary"
+                  onClick={addToCartHandler}
                 >
                   Ajouter au panier
                 </Button>
