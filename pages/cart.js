@@ -15,6 +15,7 @@ import {
   ListItem,
   List,
 } from '@material-ui/core'
+import dynamic from 'next/dynamic'
 import React, { useContext } from 'react'
 import NextLink from 'next/link'
 import Image from 'next/image'
@@ -95,7 +96,7 @@ function CartScreen() {
               </Table>
             </TableContainer>
           </Grid>
-          <Grid md={3} xs={12}>
+          <Grid item md={3} xs={12}>
             <Card>
               <List>
                 <ListItem>
@@ -124,4 +125,4 @@ function CartScreen() {
   )
 }
 
-export default CartScreen
+export default dynamic(() => Promise.resolve(CartScreen), { ssr: false })
