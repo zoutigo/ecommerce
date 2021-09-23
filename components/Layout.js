@@ -1,5 +1,5 @@
-import React, { useCallback, useContext } from 'react'
-import { createTheme, Switch } from '@material-ui/core'
+import React, { useCallback, useContext, useState } from 'react'
+import { Button, createTheme, Menu, MenuItem, Switch } from '@material-ui/core'
 import Head from 'next/head'
 import NextLink from 'next/link'
 import {
@@ -15,11 +15,13 @@ import {
 import useStyles from '../utils/styles'
 import { Store } from '../utils/Store'
 import Cookies from 'js-cookie'
+import { useRouter } from 'next/router'
 
 function Layout({ children, title, description }) {
   const { state, dispatch } = useContext(Store)
-  const { darkMode, cart } = state
+  const { darkMode, cart, userInfo } = state
   const classes = useStyles()
+  const router = useRouter()
 
   const theme = createTheme({
     typography: {
@@ -50,6 +52,26 @@ function Layout({ children, title, description }) {
     const newDarkMode = !darkMode
     Cookies.set('darkMode', newDarkMode ? 'ON' : 'OFF')
   }, [darkMode, dispatch])
+
+  const [anchorEl, setAnchorEl] = useState(null)
+  const loginClickHandler = useCallback(
+    (e) => {
+      setAnchorEl(e.currentTarget)
+    },
+    [setAnchorEl]
+  )
+
+  const loginMenuCloseHandler = useCallback(() => {
+    setAnchorEl(null)
+  }, [setAnchorEl])
+
+  const loggoutClickHandler = useCallback(() => {
+    setAnchorEl(null)
+    dispatch({ type: 'USER_LOGOUT' })
+    Cookies.remove('userInfo')
+    Cookies.remove('cartItems')
+    router.push('/')
+  }, [setAnchorEl, dispatch])
 
   return (
     <div>
@@ -83,9 +105,37 @@ function Layout({ children, title, description }) {
                   )}
                 </Link>
               </NextLink>
-              <NextLink href="/login" passHref>
-                <Link> Login</Link>
-              </NextLink>
+              {userInfo ? (
+                <>
+                  <Button
+                    id="basic-button"
+                    aria-controls="basic-menu"
+                    aria-haspopup="true"
+                    aria-expanded={open ? 'true' : undefined}
+                    onClick={loginClickHandler}
+                    className={classes.navbarButton}
+                  >
+                    {userInfo.name}
+                  </Button>
+                  <Menu
+                    id="basic-menu"
+                    keepMounted
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl)}
+                    onClose={loginMenuCloseHandler}
+                  >
+                    <MenuItem onClick={loginMenuCloseHandler}>Profile</MenuItem>
+                    <MenuItem onClick={loginMenuCloseHandler}>
+                      My account
+                    </MenuItem>
+                    <MenuItem onClick={loggoutClickHandler}>Logout</MenuItem>
+                  </Menu>
+                </>
+              ) : (
+                <NextLink href="/login" passHref>
+                  <Link> Login</Link>
+                </NextLink>
+              )}
             </div>
           </Toolbar>
         </AppBar>
