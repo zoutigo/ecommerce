@@ -22,8 +22,10 @@ import Image from 'next/image'
 import Layout from '../components/Layout'
 import { Store } from '../utils/Store'
 import axios from 'axios'
+import { useRouter } from 'next/router'
 
 function CartScreen() {
+  const router = useRouter()
   const { state, dispatch } = useContext(Store)
   const { cart } = state
 
@@ -45,6 +47,10 @@ function CartScreen() {
     },
     [dispatch]
   )
+
+  const checkoutHandler = useCallback(() => {
+    router.push('/shipping')
+  }, [router])
   return (
     <Layout title="Panier">
       <Typography component="h1" variant="h1">
@@ -141,7 +147,12 @@ function CartScreen() {
                   </Typography>
                 </ListItem>
                 <ListItem>
-                  <Button variant="contained" color="primary" fullWidth>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    onClick={checkoutHandler}
+                  >
                     Valider
                   </Button>
                 </ListItem>
