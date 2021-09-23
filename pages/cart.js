@@ -16,15 +16,35 @@ import {
   List,
 } from '@material-ui/core'
 import dynamic from 'next/dynamic'
-import React, { useContext } from 'react'
+import React, { useCallback, useContext } from 'react'
 import NextLink from 'next/link'
 import Image from 'next/image'
 import Layout from '../components/Layout'
 import { Store } from '../utils/Store'
+import axios from 'axios'
 
 function CartScreen() {
-  const { state } = useContext(Store)
+  const { state, dispatch } = useContext(Store)
   const { cart } = state
+
+  const updateCartHandler = useCallback(
+    async (item, quantity) => {
+      const { data } = await axios.get(`/api/products/${item._id}`)
+      if (data.countInStock <= quantity) {
+        window.alert('Désolé , cet article est en rupture de stock')
+        return
+      }
+      dispatch({ type: 'CART_ADD_ITEM', payload: { ...item, quantity } })
+    },
+    [dispatch]
+  )
+
+  const removeItemhandler = useCallback(
+    (item) => {
+      dispatch({ type: 'CART_REMOVE_ITEM', payload: item })
+    },
+    [dispatch]
+  )
   return (
     <Layout title="Panier">
       <Typography component="h1" variant="h1">
@@ -33,9 +53,9 @@ function CartScreen() {
       {cart.cartItems.length === 0 ? (
         <div>
           {' '}
-          Le panier est vide.<NextLink href="/">
-            {' '}
-            Aller aux achats
+          Le panier est vide.
+          <NextLink href="/" passHref>
+            <Link>Aller aux achats</Link>
           </NextLink>{' '}
         </div>
       ) : (
@@ -76,7 +96,12 @@ function CartScreen() {
                       </TableCell>
 
                       <TableCell align="right">
-                        <Select value={item.quantity}>
+                        <Select
+                          value={item.quantity}
+                          onChange={(e) =>
+                            updateCartHandler(item, e.target.value)
+                          }
+                        >
                           {[...Array(item.countInStock).keys()].map((x) => (
                             <MenuItem key={x + 1} value={x + 1}>
                               {x + 1}{' '}
@@ -86,7 +111,11 @@ function CartScreen() {
                       </TableCell>
                       <TableCell align="right">{item.price} € </TableCell>
                       <TableCell align="right">
-                        <Button variant="contained" color="secondary">
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          onClick={() => removeItemhandler(item)}
+                        >
                           x
                         </Button>{' '}
                       </TableCell>
