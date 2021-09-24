@@ -14,8 +14,16 @@ import axios from 'axios'
 import { Store } from '../utils/Store'
 import { useRouter } from 'next/router'
 import Cookies from 'js-cookie'
+import { Controller, useForm } from 'react-hook-form'
+import { useSnackbar } from 'notistack'
 
 export default function Login() {
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm()
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar()
   const classes = useStyles()
   const router = useRouter()
   const { redirect } = router.query
@@ -27,44 +35,84 @@ export default function Login() {
       router.push('/')
     }
   }, [])
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const submitHandler = async (e) => {
-    e.preventDefault()
+
+  const submitHandler = async ({ email, password }) => {
+    closeSnackbar()
     try {
       const { data } = await axios.post('/api/users/login', { email, password })
       dispatch({ type: 'USER_LOGIN', payload: data })
       Cookies.set('userInfo', JSON.stringify(data))
       router.push(redirect || '/')
     } catch (err) {
-      alert(err.response.data ? err.response.data.message : err.message)
+      enqueueSnackbar(
+        err.response.data ? err.response.data.message : err.message,
+        { variant: 'error' }
+      )
     }
   }
   return (
     <Layout title="se connecter">
-      <form className={classes.form} onSubmit={submitHandler}>
+      <form className={classes.form} onSubmit={handleSubmit(submitHandler)}>
         <Typography component="h1" variant="h1">
           Login
         </Typography>
         <List>
           <ListItem>
-            <TextField
-              variant="outlined"
-              fullWidth
-              id="email"
-              label="Email"
-              inputProps={{ type: 'email' }}
-              onChange={(e) => setEmail(e.target.value)}
+            <Controller
+              name="email"
+              control={control}
+              defaultValue=""
+              rules={{
+                required: true,
+                pattern: /^[a-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,4}$/,
+              }}
+              render={({ field }) => (
+                <TextField
+                  variant="outlined"
+                  fullWidth
+                  id="email"
+                  label="Email"
+                  inputProps={{ type: 'email' }}
+                  error={Boolean(errors.email)}
+                  helperText={
+                    errors.email
+                      ? errors.email.type === 'pattern'
+                        ? 'Email non valide'
+                        : 'Email obligatoire'
+                      : ''
+                  }
+                  {...field}
+                />
+              )}
             />
           </ListItem>
           <ListItem>
-            <TextField
-              variant="outlined"
-              fullWidth
-              id="password"
-              label="Password"
-              inputProps={{ type: 'password' }}
-              onChange={(e) => setPassword(e.target.value)}
+            <Controller
+              name="password"
+              control={control}
+              defaultValue=""
+              rules={{
+                required: true,
+                minLength: 6,
+              }}
+              render={({ field }) => (
+                <TextField
+                  variant="outlined"
+                  fullWidth
+                  id="password"
+                  label="Mot de Pass"
+                  inputProps={{ type: 'password' }}
+                  error={Boolean(errors.password)}
+                  helperText={
+                    errors.password
+                      ? errors.password.type === 'minLength'
+                        ? 'Le mot de pass doit avoir au moins 6 caratères'
+                        : 'Mot de pass obligatoire'
+                      : ''
+                  }
+                  {...field}
+                />
+              )}
             />
           </ListItem>
           <ListItem>
@@ -75,7 +123,7 @@ export default function Login() {
           </ListItem>
           <ListItem>
             Pas de compte ? &nbsp;
-            <NextLink href={`/register?redirect=${redirect} || '/'`} passHref>
+            <NextLink href={`/register?redirect=${redirect || '/'}`} passHref>
               <Link> Inscrivez vous</Link>
             </NextLink>
           </ListItem>
