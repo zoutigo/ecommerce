@@ -1,6 +1,5 @@
 import Cookies from 'js-cookie'
 import { createContext, useReducer } from 'react'
-import cart from '../pages/cart'
 
 export const Store = createContext()
 const initialState = {
@@ -13,8 +12,8 @@ const initialState = {
       ? JSON.parse(Cookies.get('shippingAddress'))
       : {},
     paymentMethod: Cookies.get('paymentMethod')
-      ? JSON.parse(Cookies.get('shippingAddress'))
-      : null,
+      ? Cookies.get('paymentMethod')
+      : '',
   },
   userInfo: Cookies.get('userInfo')
     ? JSON.parse(Cookies.get('userInfo'))
