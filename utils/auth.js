@@ -15,4 +15,23 @@ const signToken = (user) => {
   )
 }
 
-export default signToken
+const isAuth = async (req, res, next) => {
+  const { authorization } = req.headers
+
+  if (authorization) {
+    const token = authorization.slice(7, authorization.length)
+    jwt.verify(token, process.env.JWT_SECRET, (err, decode) => {
+      if (err) {
+        return res.status(401).send({ message: "Le jeton n'est pas valide" })
+      }
+      req.user = decode
+      return next()
+    })
+  } else {
+    return res
+      .status(401)
+      .send({ message: "vous n'avez pas fourni le jeton d'authentification" })
+  }
+}
+
+export { signToken, isAuth }
