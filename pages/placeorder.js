@@ -108,10 +108,10 @@ function PlaceOrder() {
   ])
 
   return (
-    <Layout title="Panier">
+    <Layout title="Details de la commande">
       <CheckoutWizard activeStep={3} />
       <Typography component="h1" variant="h1">
-        Commander
+        Details de la commande
       </Typography>
 
       <Grid container spacing={1}>
