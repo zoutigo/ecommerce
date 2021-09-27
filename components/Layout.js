@@ -61,9 +61,15 @@ function Layout({ children, title, description }) {
     [setAnchorEl]
   )
 
-  const loginMenuCloseHandler = useCallback(() => {
-    setAnchorEl(null)
-  }, [setAnchorEl])
+  const loginMenuCloseHandler = useCallback(
+    (e, redirect) => {
+      setAnchorEl(null)
+      if (redirect) {
+        router.push(redirect)
+      }
+    },
+    [setAnchorEl, router]
+  )
 
   const loggoutClickHandler = useCallback(() => {
     setAnchorEl(null)
@@ -71,7 +77,7 @@ function Layout({ children, title, description }) {
     Cookies.remove('userInfo')
     Cookies.remove('cartItems')
     router.push('/')
-  }, [setAnchorEl, dispatch])
+  }, [setAnchorEl, dispatch, router])
 
   return (
     <div>
@@ -124,9 +130,17 @@ function Layout({ children, title, description }) {
                     open={Boolean(anchorEl)}
                     onClose={loginMenuCloseHandler}
                   >
-                    <MenuItem onClick={loginMenuCloseHandler}>Profile</MenuItem>
-                    <MenuItem onClick={loginMenuCloseHandler}>
-                      My account
+                    <MenuItem
+                      onClick={(e) => loginMenuCloseHandler(e, '/profile')}
+                    >
+                      Profil
+                    </MenuItem>
+                    <MenuItem
+                      onClick={(e) =>
+                        loginMenuCloseHandler(e, '/order-history')
+                      }
+                    >
+                      Historique des commandes
                     </MenuItem>
                     <MenuItem onClick={loggoutClickHandler}>Logout</MenuItem>
                   </Menu>
