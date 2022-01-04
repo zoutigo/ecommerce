@@ -58,6 +58,15 @@ async function disconnect() {
   }
 }
 
+const drop = async () => {
+  const collections = await db.listCollections().toArray()
+  collections
+    .map((collection) => collection.name)
+    .forEach(async (collectionName) => {
+      db.dropCollection(collectionName)
+    })
+}
+
 const convertDocToObj = (doc) => {
   doc._id = doc._id.toString()
   doc.createdAt = doc.createdAt.toString()
@@ -65,6 +74,6 @@ const convertDocToObj = (doc) => {
   return doc
 }
 
-const db = { connect, disconnect, convertDocToObj }
+const db = { connect, disconnect, convertDocToObj, drop }
 
 export default db
